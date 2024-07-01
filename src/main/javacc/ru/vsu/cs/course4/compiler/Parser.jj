@@ -1,0 +1,207 @@
+PARSER_BEGIN(Parser)
+
+package ru.vsu.cs.course4.compiler;
+
+import java.util.*;
+
+import ru.vsu.cs.course4.compiler.ast.*;
+
+public class Parser {
+
+}
+
+PARSER_END(Parser)
+
+
+SKIP:  {
+    <WS: " " | "\t" | "\r" | "\n" | "\r\n">
+  | <SINGLE_LINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+  | <MULTI_LINE_COMMENT: "/*" (~["/"])* "*/">
+}
+TOKEN: {
+    <#LETTER: ["a"-"z", "A"-"Z", "_", "а"-"я", "А"-"Я"]>
+  | <#DIGIT: ["0"-"9"]>
+}
+TOKEN: {
+    <INT_VALUE: (<DIGIT>)+>
+  | <FLOAT_VALUE: <INT_VALUE> "." (<DIGIT>)* | "." (<DIGIT>)+>
+  | <#ESCAPE: "\\" ["n","t","b","r","f","\\","\"","\'"]>
+  | <CHAR_VALUE: "\'" (~["\'","\\"]|<ESCAPE>) "\'">
+  | <STRING_VALUE: "\"" (~["\"","\\"]|<ESCAPE>)* "\"">
+}
+TOKEN: { /* KEYWORDS - обязательно описываем до <IDENT> */
+    <IF: "if">
+  | <ELSE: "else">
+  | <WHILE: "while">
+  | <FOR: "for">
+  | <DEF: "def">
+  | <TRUE: "true">
+  | <FALSE: "false">
+  | <RETURN: "return">
+}
+TOKEN: {
+    <IDENT: <LETTER>(<LETTER>|<DIGIT>)*>
+}
+TOKEN: {
+    <COMMA: ",">
+  | <SEMI: ";">
+  | <LRNDBR: "(">
+  | <RRNDBR: ")">
+  | <LCURBR: "{">
+  | <RCURBR: "}">
+  | <PLUS: "+">
+  | <MINUS: "-">
+  | <STAR: "*">
+  | <SLASH: "/">
+  | <PERCENT: "%">
+  | <EQUALS: "=">
+  | <LBRACK: "[">
+  | <RBRACK: "]">
+  | <EXCLAM: "!">
+  | <INCREM: "++">
+  | <DECREM: "--">
+}
+
+ArrayNode array(): { List<ExprNode> elements = new ArrayList<>(); ExprNode e; } {
+    <LBRACK> ( e = expr() { elements.add(e); } (<COMMA> e=expr() { elements.add(e); })* )? <RBRACK>
+    { return new ArrayNode(elements); }
+}
+
+ExprNode value(): { Token val = null; ArrayNode arr; } {
+    (
+         val=<INT_VALUE>
+       | val=<FLOAT_VALUE>
+       | val=<STRING_VALUE>
+       | val=<TRUE> | val=<FALSE>
+       | arr=array() { return arr; }
+    )
+    { return new ValueNode(val.image); }
+}
+
+IdentNode ident(): { Token ident; } { ident=<IDENT> { return new IdentNode(ident.image); } }
+
+List<ExprNode> callParams(): { List<ExprNode> params = new ArrayList<>(); ExprNode e; } {
+    (e=expr() { params.add(e); } (<COMMA> e=expr() { params.add(e); })*)?
+    { return params; }
+}
+FuncCallNode funcCall(): { IdentNode ident; List<ExprNode> params; } {
+    ident=ident() <LRNDBR> params=callParams() <RRNDBR>
+    { return new FuncCallNode(ident, params); }
+}
+
+ExprNode group(): { ExprNode e; } {
+    (
+        e=value()
+      | LOOKAHEAD(2) e=funcCall()
+      | e=ident()
+      | <LRNDBR> e=expr() <RRNDBR>
+    )
+    { return e; }
+}
+
+ExprNode arrItem(): { ExprNode arr, index; } {
+    arr=group() ( <LBRACK> index=expr() <RBRACK> { arr = new ArrayAccessNode(arr, index); } )* { return arr; }
+}
+
+ExprNode logicalNot(): { ExprNode arg; } {
+    <EXCLAM> arg=arrItem() { return new UnaryOpNode("!", arg); }
+  | arg=arrItem() { return arg; }
+}
+ExprNode opposite(): { ExprNode arg; } {
+    <MINUS> arg=logicalNot() { return new UnaryOpNode("-", arg); }
+  | arg=logicalNot() { return arg; }
+}
+
+ExprNode increment(): { ExprNode arg; } {
+    <INCREM> arg=opposite() { return new UnaryOpNode("++", arg); }
+  | arg=opposite() { return arg; }
+}
+
+ExprNode decrement(): { ExprNode arg; } {
+    <DECREM> arg=increment() { return new UnaryOpNode("--", arg); }
+  | arg=increment() { return arg; }
+}
+
+ExprNode mult(): { ExprNode arg1; ExprNode arg2; Token op; } {
+    arg1=decrement() ( ( op=<STAR> | op=<SLASH> | op=<PERCENT> ) arg2=decrement() { arg1 = new BinaryOpNode(op.image, arg1, arg2); } )* { return arg1; }
+}
+
+ExprNode add(): { ExprNode arg1; ExprNode arg2; Token op; } {
+    arg1=mult() ( ( op=<PLUS> | op=<MINUS> ) arg2=mult() { arg1 = new BinaryOpNode(op.image, arg1, arg2); } )* { return arg1; }
+}
+ExprNode comparison(): { ExprNode arg1; ExprNode arg2; Token op; } {
+    arg1=add() ( ( op="==" | op="!=" | op="<" | op="<=" | op=">" | op=">=" ) arg2=add() { arg1 = new BinaryOpNode(op.image, arg1, arg2); } )*
+    { return arg1; }
+}
+
+ExprNode logicalAnd(): { ExprNode arg1; ExprNode arg2; Token op; } {
+    arg1=comparison() ( ( op="&&" ) arg2=comparison() { arg1 = new BinaryOpNode(op.image, arg1, arg2); } )* { return arg1; }
+}
+
+ExprNode logicalOr(): { ExprNode arg1; ExprNode arg2; Token op; } {
+    arg1=logicalAnd() ( ( op="||" ) arg2=logicalAnd() { arg1 = new BinaryOpNode(op.image, arg1, arg2); } )* { return arg1; }
+}
+
+ExprNode expr(): { ExprNode r; } { r=logicalOr() { return r; } }
+
+StmtNode stmt1(): { ExprNode ident; ExprNode expr; StmtNode stmt; } {
+    (
+        LOOKAHEAD(2) stmt=funcCall()
+        | ident=arrItem() <EQUALS> expr=expr() { stmt = new AssignNode(ident, expr); }
+        | <RETURN> expr=expr() { stmt = new ReturnNode(expr); }
+    )
+    { return stmt; }
+}
+
+IfNode ifStmt(): { ExprNode cond; StmtNode thenStmt; StmtNode elseStmt = null; } {
+    <IF> <LRNDBR> cond=expr() <RRNDBR> thenStmt=stmt() (<ELSE> elseStmt=stmt())?
+    { return new IfNode(cond, thenStmt, elseStmt); }
+}
+
+WhileNode whileStmt(): { ExprNode cond; StmtNode bodyStmt = null; } {
+    <WHILE> <LRNDBR> cond=expr() <RRNDBR> bodyStmt=stmt()
+    { return new WhileNode(cond, bodyStmt); }
+}
+
+ForNode forStmt(): { StmtNode init; ExprNode cond; StmtNode iterStmt; StmtNode bodyStmt = null; } {
+    <FOR> <LRNDBR> init=stmt1() <SEMI> cond=expr() <SEMI> iterStmt=stmt1() <RRNDBR> bodyStmt=stmt()
+    { return new ForNode(init, cond, iterStmt, bodyStmt); }
+}
+
+List<IdentNode> declParams(): { List<IdentNode> params = new ArrayList<>(); IdentNode p; } {
+    (p=ident() { params.add(p); } (<COMMA> p=ident() { params.add(p); })*)?
+    { return params; }
+}
+FuncDeclNode funcDecl(): { IdentNode ident; List<IdentNode> params; StmtNode body; } {
+    <DEF> ident=ident() <LRNDBR> params=declParams() <RRNDBR> <LCURBR> body=stmtList() <RCURBR>
+    { return new FuncDeclNode(ident, params, body); }
+}
+
+StmtNode stmt2(): { StmtNode stmt; } {
+    (
+        <LCURBR> stmt=stmtList() <RCURBR>
+      | stmt=ifStmt()
+      | stmt=whileStmt()
+      | stmt=forStmt()
+      | stmt=funcDecl()
+    )
+    { return stmt; }
+}
+
+StmtNode stmt(): { StmtNode stmt; } {
+    ( stmt=stmt1() <SEMI> | stmt=stmt2() )
+    { return stmt; }
+}
+
+StmtNode stmtList(): { List<StmtNode> list = new ArrayList<>(); } {
+    ( { StmtNode stmt; } stmt=stmt() { list.add(stmt); } )*
+    { return new StmtListNode(list); }
+}
+
+StmtNode program(): { StmtNode program; } {
+    program=stmtList() <EOF> { return program; }
+}
+
+AstNode start(): { StmtNode program; } {
+    program=program() { return program; }
+}

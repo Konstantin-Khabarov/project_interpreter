@@ -1,0 +1,24 @@
+def println(a) { }
+def print(a) { }
+def read() { }
+
+def readInt() { }
+def readDouble() { }
+def readString() { }
+def readBool() { }
+
+def cos(x) { }
+def sin(x) { }
+def pow(a,b) { }
+def sqrt(a) { }
+def abs(a) { }
+def log(a) { }
+
+def int(x) { }
+def double(x) { }
+def boolean(x) { }
+def string(x) { }
+
+def size(x) { }
+def newArray(x) { }
+def addItem(x, y) { }

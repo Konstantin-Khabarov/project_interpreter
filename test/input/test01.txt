@@ -1,0 +1,32 @@
+// a().a.b.c += 1  =>   o = a.b; o.c = o.c + 1
+// a.b.c = a.b.c + 1
+
+
+a = input();
+b = input(b); /* comment 1
+c = input();
+*/
+c = a + b * (2.05 - 1) + 0;  // comment 2
+if (a) {
+  a();
+  e();
+}
+while (c){
+  b(5, 4);
+  f();
+}
+
+for(a=s; b; a=r){
+  q();
+}
+
+print(c+1, "2\n23", true);
+
+
+
+def test(a, b) {
+    print(a);
+}
+
+test(3, 4);
+

@@ -1,0 +1,29 @@
+def sumRow(x, n) {
+        sum = 1;
+
+        prevElemNom = log(2) * x; //nominator
+        prevElemDenom = 1.0; //denominator
+        prevElem = prevElemNom / prevElemDenom;
+        sum = sum + prevElem;
+
+        for (i = 2; i <= n; i = i + 1) {
+            newElemNom = prevElemNom * log(2) * x;
+            newElemDenom = prevElemDenom * i;
+            newElem = newElemNom / newElemDenom;
+            // print(newElemDenom);
+            sum = sum + newElem;
+
+            prevElemNom = newElemNom;
+            prevElemDenom = newElemDenom;
+        }
+        return sum;
+    }
+
+print("Input x: ");
+x = double(read());
+print("Input n: ");
+n = int(read());
+print("The sum of n terms of a given type: ");
+println(sumRow(x,n));
+print("The value of the function using the built-in method: ");
+print(pow(2,x));

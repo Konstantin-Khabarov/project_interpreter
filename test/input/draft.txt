@@ -1,0 +1,29 @@
+arr = [9, 23, 4, 93, 8, 12, 9, -23, 3];
+
+min = 10000000.0;
+max = -10000000.0;
+minIndex = -1;
+maxIndex = -1;
+sum = 0;
+start = 0;
+end = 0;
+
+for (i = 0; i < size(arr); i = ++i) {
+    if (arr[i] <= min) {
+        min = arr[i];
+        minIndex = i;
+
+    }
+    if (arr[i] > max) {
+        max = arr[i];
+        maxIndex = i;
+        print(max + " ");
+        println(maxIndex);
+    }
+}
+println(min);
+println(max);
+println(maxIndex);
+println(minIndex);
+
+

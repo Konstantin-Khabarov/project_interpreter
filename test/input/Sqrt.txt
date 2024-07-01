@@ -1,0 +1,13 @@
+def sqrtFunc(num){
+    tolerance = 0.00001;
+    guess = num;
+
+    while (abs(pow(guess, 2) - num) > tolerance){
+        guess = (guess + num / guess) / 2;
+    }
+    return guess;
+}
+
+n = double(read());
+if (n < 0) { print("Incorrect input"); }
+else { print(sqrtFunc(n)); }
