@@ -1,5 +1,6 @@
 package ru.vsu.cs.course4.compiler.ast;
 
+import java.util.Collection;
 import java.util.List;
 
 public class ArrayNode implements ExprNode {
@@ -15,6 +16,11 @@ public class ArrayNode implements ExprNode {
 
     @Override
     public String toString() {
-        return getElements().toString();
+        return "[...]";
+    }
+
+    @Override
+    public Collection<? extends AstNode> childs() {
+        return elements;
     }
 }

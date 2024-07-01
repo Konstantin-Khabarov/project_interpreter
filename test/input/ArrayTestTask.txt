@@ -30,5 +30,5 @@ def solution (arr){
     return sum;
 }
 
-arr1 = [17, 20, 0, 16, 20, 4, 0, 9, 9, 3];
+arr1 = [17, 20, 0, 10+6, 20, 4, 0, 9, 9, 3];
 println(solution(arr1));

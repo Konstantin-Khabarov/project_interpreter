@@ -1,5 +1,8 @@
 package ru.vsu.cs.course4.compiler.ast;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 public class ArrayAccessNode implements ExprNode {
     private final ExprNode array;
     private final ExprNode index;
@@ -15,6 +18,11 @@ public class ArrayAccessNode implements ExprNode {
 
     public ExprNode getIndex() {
         return index;
+    }
+
+    @Override
+    public Collection<? extends AstNode> childs() {
+        return Arrays.asList(array, index);
     }
 
     @Override

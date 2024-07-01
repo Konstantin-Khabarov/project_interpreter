@@ -7,7 +7,9 @@ def sqrtFunc(num){
     }
     return guess;
 }
-
-n = double(read());
-if (n < 0) { print("Incorrect input"); }
-else { print(sqrtFunc(n)); }
+bool = true;
+while (bool){
+    n = double(read());
+    if (n < 0) { println("Incorrect input"); }
+    else { println(sqrtFunc(n)); bool=false; }
+}

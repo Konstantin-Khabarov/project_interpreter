@@ -15,28 +15,13 @@ public class BuiltInFunctions {
 
     static {
         for (Method m : BuiltInFunctions.class.getDeclaredMethods()) {
-            //if (!m.getName().startsWith("_")) {
-                String name = m.getName();
-                if (name.startsWith("$")) {
-                    name = name.substring(1);
-                }
-                FUNCTIONS.put(name, m);
-            //}
+            String name = m.getName();
+            if (name.startsWith("$")) {
+                name = name.substring(1);
+            }
+            FUNCTIONS.put(name, m);
         }
     }
-
-    /*private static void _println(Value... values) {
-        for (Value value : values) {
-            System.out.print(value.toString() + " ");
-        }
-        System.out.println();
-    }
-
-    private static void _print(Value... values) {
-        for (Value value : values) {
-            System.out.print(value.toString() + " ");
-        }
-    }*/
 
     public static void println(Value v) {
         System.out.println(v.toString());

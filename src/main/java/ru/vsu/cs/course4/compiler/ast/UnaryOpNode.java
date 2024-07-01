@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 public class UnaryOpNode implements ExprNode {
-    public static enum UnOp {
+    public enum UnOp {
         NOT("!"),
         OPP("-"),
         INC("++"),
