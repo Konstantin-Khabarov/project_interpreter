@@ -6,7 +6,8 @@
       "Bash(mvn compile *)",
       "PowerShell($mvn = \"C:\\\\Program Files\\\\JetBrains\\\\IntelliJ IDEA Community Edition 2024.2.2\\\\plugins\\\\maven\\\\lib\\\\maven3\\\\bin\\\\mvn.cmd\"; Set-Location \"C:\\\\Users\\\\admin\\\\IdeaProjects\\\\project_interpreter\"; & $mvn compile 2>&1 | Select-Object -Last 60)",
       "PowerShell($mvn = \"C:\\\\Program Files\\\\JetBrains\\\\IntelliJ IDEA Community Edition 2024.2.2\\\\plugins\\\\maven\\\\lib\\\\maven3\\\\bin\\\\mvn.cmd\"; Set-Location \"C:\\\\Users\\\\admin\\\\IdeaProjects\\\\project_interpreter\"; & $mvn compile 2>&1 | Select-Object -Last 40)",
-      "PowerShell($mvn = \"C:\\\\Program Files\\\\JetBrains\\\\IntelliJ IDEA Community Edition 2024.2.2\\\\plugins\\\\maven\\\\lib\\\\maven3\\\\bin\\\\mvn.cmd\"; Set-Location \"C:\\\\Users\\\\admin\\\\IdeaProjects\\\\project_interpreter\"; & $mvn package -q 2>&1 | Select-Object -Last 10)"
+      "PowerShell($mvn = \"C:\\\\Program Files\\\\JetBrains\\\\IntelliJ IDEA Community Edition 2024.2.2\\\\plugins\\\\maven\\\\lib\\\\maven3\\\\bin\\\\mvn.cmd\"; Set-Location \"C:\\\\Users\\\\admin\\\\IdeaProjects\\\\project_interpreter\"; & $mvn package -q 2>&1 | Select-Object -Last 10)",
+      "Bash(git rm *)"
     ]
   }
 }
