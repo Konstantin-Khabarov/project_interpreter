@@ -1,6 +1,9 @@
 # Maven build output
 target/
 
+# Claude Code
+.claude/
+
 # IntelliJ IDEA
 .idea/
 *.iml
