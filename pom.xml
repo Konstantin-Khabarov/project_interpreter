@@ -5,14 +5,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ru.vsu.cs.course3</groupId>
-    <artifactId>MathExprLangJavaCC</artifactId>
+    <artifactId>project_interpreter</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <mainClass>ru.vsu.cs.course4.compiler.Program</mainClass>
+        <mainClass>ru.vsu.cs.course3.compiler.Program</mainClass>
         <project.build.javaccSourceDirectory>${project.basedir}/src/main/javacc</project.build.javaccSourceDirectory>
         <project.build.generatedSourceDirectory>${project.basedir}/src-gen/main/java</project.build.generatedSourceDirectory>
     </properties>

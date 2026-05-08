@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/MathExprLangJavaCC.iml" filepath="$PROJECT_DIR$/MathExprLangJavaCC.iml" />
+      <module fileurl="file://$PROJECT_DIR$/project_interpreter.iml" filepath="$PROJECT_DIR$/project_interpreter.iml" />
     </modules>
   </component>
 </project>
