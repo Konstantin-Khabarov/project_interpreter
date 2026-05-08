@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"ru.vsu.cs.course4.compiler"},{"l":"ru.vsu.cs.course4.compiler.ast"},{"l":"ru.vsu.cs.course4.compiler.runtime"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"ru.vsu.cs.course4.compiler"},{"l":"ru.vsu.cs.course4.compiler.ast"},{"l":"ru.vsu.cs.course4.compiler.codegen"},{"l":"ru.vsu.cs.course4.compiler.runtime"},{"l":"ru.vsu.cs.course4.compiler.semantic"}];updateSearchResults();

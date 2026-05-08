@@ -159,6 +159,12 @@ public class Value {
         this.array = array;
     }
 
+    public Value() {
+        // type stays Type.NULL (field initialiser)
+    }
+
+    public Type getType() { return type; }
+
     public Value convert(Type type) {
         if (type == Type.INT) {
             return getIntValue();
@@ -296,33 +302,32 @@ public class Value {
         if (operations == null) {
             throw new InterpreterException(String.format("Unsupported operation %s", op));
         }
-        boolean found = false;
+
+        // Same-type operations
         if (v1.type == v2.type) {
-            found = operations.containsKey(v1.type);
-        } else {
-            boolean tmpBool = operations.containsKey(v1.type);
-            if (tmpBool) {
-                Value tmp = v2.convert(v1.type);
-                if (tmp != null) {
-                    v2 = tmp;
-                    found = true;
-                }
-            }
-            if (!found) {
-                tmpBool = operations.containsKey(v2.type);
-                if (tmpBool) {
-                    Value tmp = v1.convert(v2.type);
-                    if (tmp != null) {
-                        v1 = tmp;
-                        found = true;
-                    }
-                }
+            BinOperation binOp = operations.get(v1.type);
+            if (binOp != null) {
+                return binOp.operation(v1, v2);
             }
         }
-        if (!found) {
-            throw new InterpreterException(String.format("Unsupported operation %s for types (%s, %s)", op, v1.type, v2.type));
+
+        // Numeric promotion: INT <-> DOUBLE (C-like arithmetic conversion)
+        if (v1.type == Type.INT && v2.type == Type.DOUBLE) {
+            BinOperation binOp = operations.get(Type.DOUBLE);
+            if (binOp != null) {
+                return binOp.operation(new Value((double) v1.getInt()), v2);
+            }
         }
-        return operations.get(v1.type).operation(v1, v2);
+        if (v1.type == Type.DOUBLE && v2.type == Type.INT) {
+            BinOperation binOp = operations.get(Type.DOUBLE);
+            if (binOp != null) {
+                return binOp.operation(v1, new Value((double) v2.getInt()));
+            }
+        }
+
+        throw new InterpreterException(String.format(
+            "Type error: operator '%s' cannot be applied to '%s' and '%s'",
+            op, v1.type, v2.type));
     }
 
     public static Value unOp(UnaryOpNode.UnOp op, Value v) throws InterpreterException {

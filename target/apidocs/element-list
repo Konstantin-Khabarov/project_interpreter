@@ -1,3 +1,5 @@
 ru.vsu.cs.course4.compiler
 ru.vsu.cs.course4.compiler.ast
+ru.vsu.cs.course4.compiler.codegen
 ru.vsu.cs.course4.compiler.runtime
+ru.vsu.cs.course4.compiler.semantic

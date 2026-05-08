@@ -1,6 +1,7 @@
 package ru.vsu.cs.course4.compiler.runtime;
 
 import ru.vsu.cs.course4.compiler.ast.*;
+import ru.vsu.cs.course4.compiler.ast.CastNode;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -51,7 +52,20 @@ public class Interpreter {
         if (node instanceof ArrayAccessNode) {
             return execute((ArrayAccessNode) node, context);
         }
+        if (node instanceof CastNode) {
+            return execute((CastNode) node, context);
+        }
         return null;
+    }
+
+    public static Value execute(CastNode node, Context context) throws InterpreterException {
+        Value v = execute(node.getExpr(), context);
+        Value converted = v.convert(node.getTargetType());
+        if (converted == null) {
+            throw new InterpreterException(String.format(
+                "Cannot cast '%s' to '%s'", v.type, node.getTargetType()));
+        }
+        return converted;
     }
 
     public static Value execute(ArrayAccessNode node, Context context) throws InterpreterException {
