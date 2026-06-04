@@ -15,8 +15,8 @@ PARSER_END(Parser)
 
 SKIP:  {
     <WS: " " | "\t" | "\r" | "\n" | "\r\n">
-  | <SINGLE_LINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
-  | <MULTI_LINE_COMMENT: "/*" (~["/"])* "*/">
+  | <SINGLE_LINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")?>
+  | <MULTI_LINE_COMMENT: "/*" (~["*"] | "*" ~["/"])* "*/">
 }
 TOKEN: {
     <#LETTER: ["a"-"z", "A"-"Z", "_", "а"-"я", "А"-"Я"]>
@@ -144,9 +144,13 @@ ExprNode logicalOr(): { ExprNode arg1; ExprNode arg2; Token op; } {
 
 ExprNode expr(): { ExprNode r; } { r=logicalOr() { return r; } }
 
-StmtNode stmt1(): { ExprNode ident; ExprNode expr; StmtNode stmt; } {
+StmtNode stmt1(): { ExprNode ident; ExprNode expr; StmtNode stmt; Token op; } {
     (
         LOOKAHEAD(2) stmt=funcCall()
+        | LOOKAHEAD(2) ident=ident() op=<INCREM> { stmt = new AssignNode(ident, new UnaryOpNode(op.image, ident)); }
+        | LOOKAHEAD(2) ident=ident() op=<DECREM> { stmt = new AssignNode(ident, new UnaryOpNode(op.image, ident)); }
+        | op=<INCREM> ident=ident() { stmt = new AssignNode(ident, new UnaryOpNode(op.image, ident)); }
+        | op=<DECREM> ident=ident() { stmt = new AssignNode(ident, new UnaryOpNode(op.image, ident)); }
         | ident=arrItem() <EQUALS> expr=expr() { stmt = new AssignNode(ident, expr); }
         | <RETURN> expr=expr() { stmt = new ReturnNode(expr); }
     )

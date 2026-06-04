@@ -17,10 +17,14 @@ for (i = 0; i < size(arr); i = ++i) {
     if (arr[i] > max) {
         max = arr[i];
         maxIndex = i;
-        print(max + " ");
+
         println(maxIndex);
     }
 }
+def fun1(x){return x;}
+//def fun1(x){return x;}
+//func(min);
+//print(aqwer);
 println(min);
 println(max);
 println(maxIndex);

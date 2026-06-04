@@ -491,11 +491,31 @@ arg1 = new BinaryOpNode(op.image, arg1, arg2);
     throw new IllegalStateException ("Missing return statement in function");
 }
 
-  final public StmtNode stmt1() throws ParseException {ExprNode ident; ExprNode expr; StmtNode stmt;
+  final public StmtNode stmt1() throws ParseException {ExprNode ident; ExprNode expr; StmtNode stmt; Token op;
     if (jj_2_2(2)) {
       stmt = funcCall();
+    } else if (jj_2_3(2)) {
+      ident = ident();
+      op = jj_consume_token(INCREM);
+stmt = new AssignNode(ident, new UnaryOpNode(op.image, ident));
+    } else if (jj_2_4(2)) {
+      ident = ident();
+      op = jj_consume_token(DECREM);
+stmt = new AssignNode(ident, new UnaryOpNode(op.image, ident));
     } else {
       switch (jj_ntk == -1 ? jj_ntk_f() : jj_ntk) {
+      case INCREM:{
+        op = jj_consume_token(INCREM);
+        ident = ident();
+stmt = new AssignNode(ident, new UnaryOpNode(op.image, ident));
+        break;
+        }
+      case DECREM:{
+        op = jj_consume_token(DECREM);
+        ident = ident();
+stmt = new AssignNode(ident, new UnaryOpNode(op.image, ident));
+        break;
+        }
       case INT_VALUE:
       case FLOAT_VALUE:
       case STRING_VALUE:
@@ -655,7 +675,9 @@ params.add(p);
     case RETURN:
     case IDENT:
     case LRNDBR:
-    case LBRACK:{
+    case LBRACK:
+    case INCREM:
+    case DECREM:{
       stmt = stmt1();
       jj_consume_token(SEMI);
       break;
@@ -694,7 +716,9 @@ params.add(p);
       case IDENT:
       case LRNDBR:
       case LCURBR:
-      case LBRACK:{
+      case LBRACK:
+      case INCREM:
+      case DECREM:{
         break;
         }
       default:
@@ -740,6 +764,40 @@ list.add(stmt);
     try { return (!jj_3_2()); }
     catch(LookaheadSuccess ls) { return true; }
     finally { jj_save(1, xla); }
+  }
+
+  private boolean jj_2_3(int xla)
+ {
+    jj_la = xla;
+    jj_scanpos = token;
+    jj_lastpos = token;
+    try { return (!jj_3_3()); }
+    catch(LookaheadSuccess ls) { return true; }
+    finally { jj_save(2, xla); }
+  }
+
+  private boolean jj_2_4(int xla)
+ {
+    jj_la = xla;
+    jj_scanpos = token;
+    jj_lastpos = token;
+    try { return (!jj_3_4()); }
+    catch(LookaheadSuccess ls) { return true; }
+    finally { jj_save(3, xla); }
+  }
+
+  private boolean jj_3_3()
+ {
+    if (jj_3R_12()) return true;
+    if (jj_scan_token(INCREM)) return true;
+    return false;
+  }
+
+  private boolean jj_3_4()
+ {
+    if (jj_3R_12()) return true;
+    if (jj_scan_token(DECREM)) return true;
+    return false;
   }
 
   private boolean jj_3_1()
@@ -789,9 +847,9 @@ list.add(stmt);
 	   jj_la1_0 = new int[] {0x100000,0x84b04c0,0x304c0,0x100000,0x84b04c0,0x304c0,0x480000,0x0,0x4b04c0,0x84b04c0,0x84b04c0,0x84b04c0,0x70000000,0x70000000,0xc000000,0xc000000,0x0,0x0,0x0,0x0,0x4f04c0,0x1000,0x100000,0x80000,0x100e800,0x14fecc0,0x14fecc0,};
 	}
 	private static void jj_la1_init_1() {
-	   jj_la1_1 = new int[] {0x0,0x1d,0x1,0x0,0x1d,0x1,0x0,0x1,0x5,0x5,0xd,0x1d,0x0,0x0,0x0,0x0,0x7e0,0x7e0,0x800,0x1000,0x1,0x0,0x0,0x0,0x0,0x1,0x1,};
+	   jj_la1_1 = new int[] {0x0,0x1d,0x1,0x0,0x1d,0x1,0x0,0x1,0x5,0x5,0xd,0x1d,0x0,0x0,0x0,0x0,0x7e0,0x7e0,0x800,0x1000,0x19,0x0,0x0,0x0,0x0,0x19,0x19,};
 	}
-  private final JJCalls[] jj_2_rtns = new JJCalls[2];
+  private final JJCalls[] jj_2_rtns = new JJCalls[4];
   private boolean jj_rescan = false;
   private int jj_gc = 0;
 
@@ -1103,7 +1161,7 @@ list.add(stmt);
 
   private void jj_rescan_token() {
     jj_rescan = true;
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 4; i++) {
       try {
         JJCalls p = jj_2_rtns[i];
         do {
@@ -1114,6 +1172,8 @@ list.add(stmt);
             switch (i) {
               case 0: jj_3_1(); break;
               case 1: jj_3_2(); break;
+              case 2: jj_3_3(); break;
+              case 3: jj_3_4(); break;
             }
           }
           p = p.next;

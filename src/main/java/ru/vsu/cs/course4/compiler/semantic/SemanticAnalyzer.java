@@ -5,44 +5,25 @@ import ru.vsu.cs.course4.compiler.runtime.*;
 
 import java.util.*;
 
-/**
- * Semantic analysis pass over the AST.
- *
- * Checks performed:
- *   - Undefined variables
- *   - Undefined functions / wrong argument count
- *   - Type mismatches (C-like strict typing, no implicit coercions)
- *   - 'return' outside of function body
- *   - Duplicate function declarations
- *
- * AST modification:
- *   - Inserts CastNode for INT→DOUBLE arithmetic promotion (mirrors C behaviour)
- */
 public class SemanticAnalyzer {
 
     private final List<SemanticError> errors = new ArrayList<>();
 
-    // scope stack: each entry maps variable name → inferred type (NULL = unknown)
     private final Deque<Map<String, Type>> scopeStack = new ArrayDeque<>();
 
-    // all declared functions visible so far (built-ins + user-defined)
     private final Map<String, FuncDeclNode> functions = new HashMap<>();
 
     private boolean inFunction = false;
 
-    // -----------------------------------------------------------------------
-    // Public entry point
-    // -----------------------------------------------------------------------
 
     public List<SemanticError> analyze(AstNode root, Context builtinContext) {
-        // Register built-in functions
         for (Map.Entry<String, Value> entry : builtinContext.values.entrySet()) {
             if (entry.getValue().getType() == Type.FUNC && entry.getValue().getFunc() != null) {
                 functions.put(entry.getKey(), entry.getValue().getFunc());
             }
         }
 
-        // Pre-scan top-level function declarations so forward calls work
+
         if (root instanceof StmtListNode) {
             for (StmtNode stmt : ((StmtListNode) root).getStmts()) {
                 if (stmt instanceof FuncDeclNode) {
@@ -57,16 +38,13 @@ public class SemanticAnalyzer {
         return errors;
     }
 
-    // -----------------------------------------------------------------------
-    // Scope helpers
-    // -----------------------------------------------------------------------
+
 
     private void pushScope() { scopeStack.push(new LinkedHashMap<>()); }
     private void popScope()  { if (!scopeStack.isEmpty()) scopeStack.pop(); }
 
     private void setVarType(String name, Type type) {
-        // Update in the nearest enclosing scope that already has the variable;
-        // otherwise declare in the current scope.
+
         for (Map<String, Type> scope : scopeStack) {
             if (scope.containsKey(name)) {
                 scope.put(name, type);
@@ -82,7 +60,7 @@ public class SemanticAnalyzer {
         for (Map<String, Type> scope : scopeStack) {
             if (scope.containsKey(name)) return scope.get(name);
         }
-        return null; // not found
+        return null;
     }
 
     private void registerFuncDecl(FuncDeclNode node) {
@@ -96,9 +74,6 @@ public class SemanticAnalyzer {
 
     private void error(String msg) { errors.add(new SemanticError(msg)); }
 
-    // -----------------------------------------------------------------------
-    // Node dispatch — returns inferred expression type or null for statements
-    // -----------------------------------------------------------------------
 
     private Type analyzeNode(AstNode node) {
         if (node == null) return null;
@@ -121,9 +96,7 @@ public class SemanticAnalyzer {
         return null;
     }
 
-    // -----------------------------------------------------------------------
-    // Statement nodes
-    // -----------------------------------------------------------------------
+
 
     private Type analyzeStmtList(StmtListNode node) {
         for (StmtNode stmt : node.getStmts()) analyzeNode(stmt);
@@ -145,7 +118,6 @@ public class SemanticAnalyzer {
     }
 
     private Type analyzeFuncDecl(FuncDeclNode node) {
-        // Already registered in pre-scan; just analyse the body.
         boolean savedInFunc = inFunction;
         inFunction = true;
 
@@ -205,9 +177,6 @@ public class SemanticAnalyzer {
         return null;
     }
 
-    // -----------------------------------------------------------------------
-    // Expression nodes
-    // -----------------------------------------------------------------------
 
     private Type analyzeFuncCall(FuncCallNode node) {
         String name = node.getFunc().getName();
@@ -237,7 +206,6 @@ public class SemanticAnalyzer {
         Type rType = analyzeNode(node.getArg2());
         BinaryOpNode.BinOp op = node.getOp();
 
-        // When either type is unknown we can only infer, not validate
         if (isUnknown(lType) || isUnknown(rType)) {
             return inferBinOpResult(op, lType, rType);
         }
@@ -292,7 +260,6 @@ public class SemanticAnalyzer {
         }
     }
 
-    // Inserts CastNode for INT→DOUBLE promotion and returns the result type.
     private Type numericPromotion(BinaryOpNode node, Type lType, Type rType) {
         if (lType == rType) return lType;
         if (lType == Type.INT && rType == Type.DOUBLE) {

@@ -9,21 +9,6 @@ import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.util.*;
 
-/**
- * Stack-based virtual machine that executes bytecode produced by BytecodeGenerator.
- *
- * Memory model:
- *   valueStack  – operand/evaluation stack
- *   callStack   – return addresses and saved scope depths
- *   scopes      – list of variable scopes (global = index 0, function-local = top)
- *
- * Calling convention:
- *   CALL funcname:N – pops N arguments (arg_N on top), saves frame, pushes new
- *                     scope, jumps to function start. The function prologue then
- *                     STOREs the arguments into its local scope.
- *   RETURN          – pops return value, restores scope chain and IP, pushes
- *                     return value for the caller.
- */
 public class VirtualMachine {
 
     private List<Instruction> code;
@@ -31,12 +16,10 @@ public class VirtualMachine {
     private final Map<String, Integer> labelTable = new HashMap<>();
 
     private final Deque<Value>    valueStack = new ArrayDeque<>();
-    private final Deque<int[]>    callStack  = new ArrayDeque<>(); // [returnAddr, scopeDepth]
+    private final Deque<int[]>    callStack  = new ArrayDeque<>();
     private final List<Map<String, Value>> scopes = new ArrayList<>();
 
-    // -----------------------------------------------------------------------
-    // Load & preprocess
-    // -----------------------------------------------------------------------
+
 
     public void load(List<Instruction> instructions) {
         this.code = instructions;
@@ -50,11 +33,9 @@ public class VirtualMachine {
             Instruction instr = code.get(i);
             switch (instr.getOpCode()) {
                 case LABEL:
-                    // Map label → index of the instruction *after* the LABEL pseudo-op
                     labelTable.put((String) instr.getOperand(), i + 1);
                     break;
                 case DEF_FUNC:
-                    // Function body starts at the instruction *after* DEF_FUNC
                     funcTable.put((String) instr.getOperand(), i + 1);
                     break;
                 default:
@@ -63,9 +44,7 @@ public class VirtualMachine {
         }
     }
 
-    // -----------------------------------------------------------------------
-    // Execute
-    // -----------------------------------------------------------------------
+
 
     public void execute() throws InterpreterException {
         scopes.clear();
@@ -77,14 +56,12 @@ public class VirtualMachine {
 
             switch (instr.getOpCode()) {
 
-                // ── Push literals ──────────────────────────────────────────
                 case PUSH_INT:    push(new Value((int)    instr.getOperand())); break;
                 case PUSH_DOUBLE: push(new Value((double) instr.getOperand())); break;
                 case PUSH_STRING: push(new Value((String) instr.getOperand())); break;
                 case PUSH_BOOL:   push(new Value((boolean)instr.getOperand())); break;
                 case PUSH_NULL:   push(new Value());                            break;
 
-                // ── Variable access ────────────────────────────────────────
                 case LOAD: {
                     String name = (String) instr.getOperand();
                     Value v = loadVar(name);
@@ -101,7 +78,6 @@ public class VirtualMachine {
                     break;
                 }
 
-                // ── Operations ─────────────────────────────────────────────
                 case BINOP: {
                     Value v2 = pop();
                     Value v1 = pop();
@@ -127,7 +103,6 @@ public class VirtualMachine {
                     break;
                 }
 
-                // ── Array operations ───────────────────────────────────────
                 case ARRAY_NEW:
                     push(new Value(new ArrayList<>()));
                     break;
@@ -150,10 +125,8 @@ public class VirtualMachine {
                     break;
                 }
 
-                // ── Stack ──────────────────────────────────────────────────
                 case POP: pop(); break;
 
-                // ── Control flow ───────────────────────────────────────────
                 case JMP: {
                     int target = resolveLabel((String) instr.getOperand());
                     ip = target;
@@ -169,13 +142,12 @@ public class VirtualMachine {
                     break;
                 }
 
-                // ── Function call ──────────────────────────────────────────
                 case CALL: {
                     ip = executeCall((String) instr.getOperand(), ip);
                     continue; // ip already updated
                 }
 
-                // ── Return ─────────────────────────────────────────────────
+
                 case RETURN: {
                     Value returnVal = pop();
 
@@ -195,7 +167,6 @@ public class VirtualMachine {
                     continue;
                 }
 
-                // ── Pseudo-instructions (ignored at execution time) ────────
                 case LABEL:
                 case DEF_FUNC:
                 case END_FUNC:
@@ -212,23 +183,18 @@ public class VirtualMachine {
         }
     }
 
-    // -----------------------------------------------------------------------
-    // CALL dispatch
-    // Returns the new ip to continue from (caller must `continue` the loop).
-    // -----------------------------------------------------------------------
+
 
     private int executeCall(String callOperand, int currentIp) throws InterpreterException {
         int colon = callOperand.lastIndexOf(':');
         String funcName = callOperand.substring(0, colon);
         int nargs = Integer.parseInt(callOperand.substring(colon + 1));
 
-        // Pop arguments in order (left-to-right after reversing)
         Value[] args = new Value[nargs];
         for (int i = nargs - 1; i >= 0; i--) {
             args[i] = pop();
         }
 
-        // Try built-in first
         Method m = BuiltInFunctions.FUNCTIONS.get(funcName);
         if (m != null) {
             try {
@@ -243,30 +209,21 @@ public class VirtualMachine {
             return currentIp + 1; // normal advance
         }
 
-        // User-defined function
         Integer funcAddr = funcTable.get(funcName);
         if (funcAddr == null) {
             throw new InterpreterException("Undefined function: '" + funcName + "'");
         }
 
-        // Save frame (return address, current scope depth)
         callStack.push(new int[]{currentIp + 1, scopes.size()});
 
-        // Push args back so the function prologue can STORE them
         for (int i = 0; i < nargs; i++) push(args[i]);
 
-        // New scope for this function invocation
         scopes.add(new HashMap<>());
 
         return funcAddr; // jump to function
     }
 
-    // -----------------------------------------------------------------------
-    // Scope helpers
-    // -----------------------------------------------------------------------
-
     private void storeVar(String name, Value value) {
-        // Update existing binding (search outward); otherwise declare in current scope.
         for (int i = scopes.size() - 1; i >= 0; i--) {
             if (scopes.get(i).containsKey(name)) {
                 scopes.get(i).put(name, value);
@@ -290,17 +247,9 @@ public class VirtualMachine {
         return target;
     }
 
-    // -----------------------------------------------------------------------
-    // Stack helpers
-    // -----------------------------------------------------------------------
-
     private void  push(Value v) { valueStack.push(v); }
     private Value pop()         { return valueStack.pop(); }
     private Value peek()        { return valueStack.peek(); }
-
-    // -----------------------------------------------------------------------
-    // Bytecode serialisation (human-readable text format)
-    // -----------------------------------------------------------------------
 
     public static void writeBytecode(List<Instruction> instructions, PrintWriter writer) {
         for (Instruction instr : instructions) {

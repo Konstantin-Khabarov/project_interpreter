@@ -160,7 +160,6 @@ public class Value {
     }
 
     public Value() {
-        // type stays Type.NULL (field initialiser)
     }
 
     public Type getType() { return type; }
@@ -303,7 +302,6 @@ public class Value {
             throw new InterpreterException(String.format("Unsupported operation %s", op));
         }
 
-        // Same-type operations
         if (v1.type == v2.type) {
             BinOperation binOp = operations.get(v1.type);
             if (binOp != null) {
@@ -311,7 +309,6 @@ public class Value {
             }
         }
 
-        // Numeric promotion: INT <-> DOUBLE (C-like arithmetic conversion)
         if (v1.type == Type.INT && v2.type == Type.DOUBLE) {
             BinOperation binOp = operations.get(Type.DOUBLE);
             if (binOp != null) {

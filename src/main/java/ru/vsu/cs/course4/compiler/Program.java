@@ -19,9 +19,6 @@ import ru.vsu.cs.course4.compiler.semantic.SemanticError;
 
 public class Program {
 
-    // -----------------------------------------------------------------------
-    // Built-in context
-    // -----------------------------------------------------------------------
 
     public static Context prepareContext() throws Exception {
         Reader input = new StringReader(
@@ -59,20 +56,17 @@ public class Program {
         return context;
     }
 
-    // -----------------------------------------------------------------------
-    // main
-    // -----------------------------------------------------------------------
+
 
     public static void main(String[] args) throws Exception {
         Locale.setDefault(Locale.ROOT);
 
         boolean printTree    = true;
-        boolean runCodegen   = false;   // -codegen : generate bytecode + run via VM
-        boolean runInterp    = true;    // default: run via tree-walking interpreter
+        boolean runCodegen   = false;
+        boolean runInterp    = true;
         String  inputFile    = null;
-        String  outputBcFile = null;    // -o <file> : save bytecode to file
+        String  outputBcFile = null;
 
-        // Argument parsing
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
                 case "-nt":       printTree  = false; break;
@@ -82,11 +76,9 @@ public class Program {
             }
         }
 
-        // Open input
         Reader input = (inputFile != null) ? new FileReader(inputFile)
                                            : new InputStreamReader(System.in);
 
-        // Parse
         Parser parser = new Parser(input);
         AstNode ast;
         try {
@@ -103,10 +95,8 @@ public class Program {
             System.out.println();
         }
 
-        // Prepare built-in function context
         Context builtinContext = prepareContext();
 
-        // ── Semantic analysis ──────────────────────────────────────────────
         System.out.println("=== Semantic analysis ===");
         SemanticAnalyzer analyzer = new SemanticAnalyzer();
         List<SemanticError> semanticErrors = analyzer.analyze(ast, builtinContext);
@@ -128,14 +118,11 @@ public class Program {
             System.out.println();
         }
 
-        // ── Execution ─────────────────────────────────────────────────────
         if (runCodegen) {
-            // Code generation path
             System.out.println("=== Code generation ===");
             BytecodeGenerator gen = new BytecodeGenerator();
             List<Instruction> bytecode = gen.generate(ast);
 
-            // Print/save bytecode
             if (outputBcFile != null) {
                 try (PrintWriter pw = new PrintWriter(new FileWriter(outputBcFile))) {
                     VirtualMachine.writeBytecode(bytecode, pw);
@@ -159,7 +146,6 @@ public class Program {
             }
 
         } else if (runInterp) {
-            // Tree-walking interpreter path (default)
             System.out.println("=== Interpreter execution ===");
             try {
                 Interpreter.execute(ast, builtinContext);

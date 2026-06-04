@@ -1,9 +1,18 @@
+/*
+Задание для ArrayTestTask.txt (Task 7 задача №6):
+Вводится массив целых чисел. Посчитать сумму элементов, расположенных между
+последним минимальным элементом и первым максимальным.
+*/
+
+
 def solution (arr){
     minValue = 10000000;
     maxValue = -10000000;
     minIndex = -1;
     maxIndex = -1;
     sum = 0;
+    start=0;
+    end=0;
 
     for (i = 0; i < size(arr); i = ++i) {
         if (arr[i] <= minValue) {
