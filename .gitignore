@@ -1,24 +1,9 @@
-# Maven build output
 target/
-
-# Claude Code
-.claude/
-
-# IntelliJ IDEA
 .idea/
 *.iml
 *.iws
 *.ipr
 out/
-
-# Generated parser sources (regenerated from Parser.jj on build)
-src-gen/
-
-# OS
 .DS_Store
 Thumbs.db
-
-# Test/temp files
-*.bc
-test_good.lang
-test_errors.lang
+.claude/
